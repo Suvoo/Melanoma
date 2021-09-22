@@ -11,6 +11,7 @@ import albumentations as A
 import os
 
 import efficientnet_pytorch
+import pretrainedmodels
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
@@ -38,10 +39,10 @@ class EfficientNet(nn.Module):
         )
         
     def forward(self, image, targets):
-        # out = self.base_model(image)
-        out = F.sigmoid(self.base_model(image))
-        # loss = nn.BCEWithLogitsLoss()(out, targets.view(-1, 1).type_as(out))
-        loss = 0
+        out = self.base_model(image)
+        # out = F.sigmoid(self.base_model(image))
+        loss = nn.BCEWithLogitsLoss()(out, targets.view(-1, 1).type_as(out))
+        # loss = 0
         return out, loss
 
 def predict(image_path,model):
@@ -84,7 +85,19 @@ def predict(image_path,model):
         model,
         DEVICE
     )
-    return np.vstack((predictions_op)).ravel()
+    # predictions_op = torch.sigmoid(predictions_op)
+    print(predictions_op)
+    l = np.vstack((predictions_op)).ravel()
+    l = torch.Tensor(l)
+    print(l)
+    an = torch.sigmoid(l)
+    print(an)
+    np_arr = an.cpu().detach().numpy()
+    print(np_arr)
+
+    # return np.vstack((predictions_op)).ravel()
+    return np_arr
+
 
 @app.route('/', methods=["GET","POST"])
 def upload_predict():
@@ -93,15 +106,14 @@ def upload_predict():
         if image_file:
             image_location = os.path.join(UPLOAD_FOLDER,image_file.filename)
             image_file.save(image_location)
-            pred = predict(image_location,MODEL)
-            print(pred)
-            return render_template('index.html',prediction = 1)
+            pred = predict(image_location,MODEL)[0]
+            # print(pred)
+            return render_template('index.html',prediction = pred,image_loc = image_file.filename)
 
-    return render_template('index.html',prediction = 0) #jinja2
+    return render_template('index.html',prediction = 0,image_loc = None) #jinja2
 
 if __name__ == '__main__':
     MODEL = EfficientNet()
     MODEL.load_state_dict(torch.load('weights\model_fold_0.bin'))
     MODEL.to(DEVICE)
-
     app.run(port = 1200,debug=True)
