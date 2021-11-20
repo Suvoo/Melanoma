@@ -46,11 +46,6 @@ class EfficientNet(nn.Module):
         return out, loss
 
 def predict(image_path,model):
-    
-    
-    #model_path = "f'/kaggle/working/model_fold{fold}'"
-    #model_path = '/kaggle/working/model_fold0_epoch0.bin'
-    # model_path = './model_fold_0.bin'
         
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
@@ -60,17 +55,14 @@ def predict(image_path,model):
             A.Normalize(mean, std, max_pixel_value=255.0, always_apply=True,p=1.0)
         ]
     )
-    
     test_images = [image_path]
-    test_targets = [0]
-    
+    test_targets = [0]   
     test_dataset = ClassificationLoader(
         image_paths = test_images,
         targets= test_targets,
         resize = None,
         augmentations = test_aug
-    )
-    
+    ) 
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
         batch_size = 1,
@@ -78,8 +70,6 @@ def predict(image_path,model):
         num_workers=0
     )
     #Earlier defined class for model
-
-    
     predictions_op = Engine.predict(
         test_loader,
         model,
@@ -94,7 +84,6 @@ def predict(image_path,model):
     print(an)
     np_arr = an.cpu().detach().numpy()
     print(np_arr)
-
     # return np.vstack((predictions_op)).ravel()
     return np_arr
 
