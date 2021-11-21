@@ -12,5 +12,5 @@ Solution:
 Tools Used:
 * Pytorch (EfficientNet)
 * Flask
-
-***80% project completed, rushing before offline reopening***
+<!-- 
+***80% project completed, rushing before offline reopening*** -->
